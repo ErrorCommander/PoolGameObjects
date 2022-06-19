@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 namespace PoolerSystem.Ref
 {
@@ -10,20 +11,9 @@ namespace PoolerSystem.Ref
         [SerializeField] private List<Pool> _pools;
         private Dictionary<GameObject, Pool> _poolsDictionary;
 
-        public static Pooler Instance { get; private set; }
+        public static Pooler Instance => _instance ??= new GameObject("Pooler GameObjects").AddComponent<Pooler>();
+        private static Pooler _instance;
         private Pooler() { }
-
-        static Pooler()
-        {
-            GameObject newGameObject = new GameObject("PoolerGameObjects");
-            Instance = newGameObject.AddComponent<Pooler>();
-        }
-
-        private void Awake()
-        {
-            _pools = new List<Pool>();
-            _poolsDictionary = new Dictionary<GameObject, Pool>();
-        }
 
         public bool AddPool(Pool pool)
         {
@@ -73,41 +63,92 @@ namespace PoolerSystem.Ref
             return Spawn(tag, position, Quaternion.identity);
         }
 
-        public void Clear(GameObject tag)
+        public bool ClearPool(GameObject tag)
         {
-            if (!_poolsDictionary.ContainsKey(tag))
+            if(!_poolsDictionary.ContainsKey(tag))
             {
                 Debug.Log("Tag not found");
-                return;
+                return false;
             }
 
             Debug.Log("Pooler -> clear pool " + tag.name);
             _poolsDictionary[tag].ClearPool();
-
-            _pools = _pools.Where((a) => a.Tag != tag).ToList();
-            _poolsDictionary.Remove(tag);
+            return true;
         }
 
-        public void Clear(params GameObject[] tags)
+        public void ClearPool(params GameObject[] tags)
         {
             foreach (var tag in tags)
-                Clear(tag);
+                ClearPool(tag);
         }
 
-        private void ClearAll()
+        private void ClearAllPools()
         {
-            if (_poolsDictionary == null)
+            if (_pools == null || _pools.Count == 0)
                 return;
 
-            Clear(_poolsDictionary.Keys.ToArray());
+            ClearPool(GetTags());
+        }
+
+        public bool DestroyPool(GameObject tag)
+        {
+            if (!_poolsDictionary.ContainsKey(tag))
+            {
+                Debug.Log("Tag not found");
+                return false;
+            }
+
+            Debug.Log("Pooler -> Destroy pool " + tag.name);
+            _poolsDictionary[tag].DestroyPool();
+            _pools.Remove(_poolsDictionary[tag]);
+            _poolsDictionary.Remove(tag);
+            return true;
+        }
+
+        public void DestroyPool(params GameObject[] tags)
+        {
+            foreach (var tag in tags)
+                DestroyPool(tag);
+        }
+
+        //-------------PRIVATE METODS-------------
+        private void Awake()
+        {
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            _instance ??= this;
+            Debug.Log("Actual " + Instance.name);
+            _poolsDictionary = new Dictionary<GameObject, Pool>();
+            _pools ??= new List<Pool>();
+            foreach (var pool in _pools)
+                AddPool(pool);
+
+            SceneManager.sceneUnloaded += UnloadScene;
+        }
+
+        private void DestroyAllPools()
+        {
+            if (_pools == null || _pools.Count == 0)
+                return;
+
+            DestroyPool(GetTags());
             _poolsDictionary.Clear();
             _pools.Clear();
         }
 
         private void OnDestroy()
         {
-            ClearAll();
+            DestroyAllPools();
             Destroy(gameObject);
+        }
+
+        private void UnloadScene(Scene arg0)
+        {
+            _instance = null;
+            SceneManager.sceneUnloaded -= UnloadScene;
         }
     }
 }

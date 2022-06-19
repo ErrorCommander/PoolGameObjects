@@ -28,7 +28,7 @@ namespace PoolerSystem.Ref
         {
             _queueReadyGO = new Queue<GameObject>();
             _listGO = new List<GameObject>();
-            _parentPool = new GameObject("Pool " + _prefab.name).transform;
+            _parentPool = new GameObject("Pool: " + _prefab.name).transform;
             _parentPool.transform.SetParent(Pooler.Instance.transform);
             FillPool();
         }
@@ -61,18 +61,25 @@ namespace PoolerSystem.Ref
             foreach (var go in _listGO)
                 MonoBehaviour.Destroy(go);
 
-            MonoBehaviour.Destroy(_parentPool.gameObject);
             _queueReadyGO.Clear();
             _listGO.Clear();
+            Debug.Log("Pool is Clean");
+        }
+
+        public void DestroyPool()
+        {
+            ClearPool();
+            MonoBehaviour.Destroy(_parentPool.gameObject);
+            Debug.Log("Pool destroyed");
         }
 
         private void FillPool()
         {
-            if (_queueReadyGO.Count >= _initPoolSize)
+            if (_listGO.Count >= _initPoolSize)
                 return;
 
-            for (int i = _queueReadyGO.Count; i < _initPoolSize; i++)
-                _queueReadyGO.Enqueue(AddGameObject());
+            for (int i = _listGO.Count; i < _initPoolSize; i++)
+                AddGameObject();
         }
 
         private GameObject AddGameObject()
@@ -82,6 +89,7 @@ namespace PoolerSystem.Ref
             newObj.name = string.Format("{0} {1:000}", _prefab.name, _objID++);
             newObj.AddComponent<AutoEnqueue>().Initialize(_queueReadyGO);
             _listGO.Add(newObj);
+            _queueReadyGO.Enqueue(newObj);
 
             return newObj;
         }

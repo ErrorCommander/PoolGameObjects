@@ -63,9 +63,16 @@ namespace PoolerSystem.Tag
             foreach (var go in _listGO)
                 MonoBehaviour.Destroy(go);
 
-            MonoBehaviour.Destroy(_parentPool.gameObject);
             _queueReadyGO.Clear();
             _listGO.Clear();
+            Debug.Log("Pool is Clean");
+        }
+
+        public void DestroyPool()
+        {
+            ClearPool();
+            MonoBehaviour.Destroy(_parentPool.gameObject);
+            Debug.Log("Pool destroyed");
         }
 
         private void FillPool()
@@ -74,7 +81,7 @@ namespace PoolerSystem.Tag
                 return;
 
             for (int i = _queueReadyGO.Count; i < _initPoolSize; i++)
-                _queueReadyGO.Enqueue(AddGameObject());
+                AddGameObject();
         }
 
         private GameObject AddGameObject()
@@ -84,6 +91,7 @@ namespace PoolerSystem.Tag
             newObj.name = string.Format("{0} {1:000}", _prefab.name, _objID++);
             newObj.AddComponent<AutoEnqueue>().Initialize(_queueReadyGO);
             _listGO.Add(newObj);
+            _queueReadyGO.Enqueue(newObj);
 
             return newObj;
         }
