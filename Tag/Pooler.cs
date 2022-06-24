@@ -15,11 +15,6 @@ namespace PoolerSystem.Tag
         private static Pooler _instance;
         private Pooler() { }
 
-        private void Awake()
-        {
-            Initialize();
-        }
-
         public bool AddPool(Pool pool)
         {
             if (_poolsDictionary.ContainsKey(pool.Tag))
@@ -86,14 +81,6 @@ namespace PoolerSystem.Tag
                 ClearPool(tag);
         }
 
-        private void ClearAllPools()
-        {
-            if (_pools == null || _pools.Count == 0)
-                return;
-
-            ClearPool(GetTags());
-        }
-
         public bool DestroyPool(string tag)
         {
             if (!_poolsDictionary.ContainsKey(tag))
@@ -139,6 +126,14 @@ namespace PoolerSystem.Tag
             _pools.Clear();
         }
 
+        private void ClearAllPools()
+        {
+            if (_pools == null || _pools.Count == 0)
+                return;
+
+            ClearPool(GetTags());
+        }
+
         private void OnDestroy()
         {
             ClearAll();
@@ -149,6 +144,11 @@ namespace PoolerSystem.Tag
         {
             _instance = null;
             SceneManager.sceneUnloaded -= UnloadScene;
+        }
+
+        private void Awake()
+        {
+            Initialize();
         }
     }
 }

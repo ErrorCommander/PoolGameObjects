@@ -82,14 +82,6 @@ namespace PoolerSystem.Ref
                 ClearPool(tag);
         }
 
-        private void ClearAllPools()
-        {
-            if (_pools == null || _pools.Count == 0)
-                return;
-
-            ClearPool(GetTags());
-        }
-
         public bool DestroyPool(GameObject tag)
         {
             if (!_poolsDictionary.ContainsKey(tag))
@@ -112,11 +104,7 @@ namespace PoolerSystem.Ref
         }
 
         //-------------PRIVATE METODS-------------
-        private void Awake()
-        {
-            Initialize();
-        }
-
+        
         private void Initialize()
         {
             _instance ??= this;
@@ -129,6 +117,14 @@ namespace PoolerSystem.Ref
             SceneManager.sceneUnloaded += UnloadScene;
         }
 
+        private void ClearAllPools()
+        {
+            if (_pools == null || _pools.Count == 0)
+                return;
+
+            ClearPool(GetTags());
+        }
+
         private void DestroyAllPools()
         {
             if (_pools == null || _pools.Count == 0)
@@ -137,6 +133,11 @@ namespace PoolerSystem.Ref
             DestroyPool(GetTags());
             _poolsDictionary.Clear();
             _pools.Clear();
+        }
+
+        private void Awake()
+        {
+            Initialize();
         }
 
         private void OnDestroy()

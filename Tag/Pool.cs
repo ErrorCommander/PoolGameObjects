@@ -81,7 +81,7 @@ namespace PoolerSystem.Tag
                 return;
 
             for (int i = _queueReadyGO.Count; i < _initPoolSize; i++)
-                AddGameObject();
+                _queueReadyGO.Enqueue(AddGameObject());
         }
 
         private GameObject AddGameObject()
@@ -91,7 +91,6 @@ namespace PoolerSystem.Tag
             newObj.name = string.Format("{0} {1:000}", _prefab.name, _objID++);
             newObj.AddComponent<AutoEnqueue>().Initialize(_queueReadyGO);
             _listGO.Add(newObj);
-            _queueReadyGO.Enqueue(newObj);
 
             return newObj;
         }
